@@ -1,2 +1,46 @@
 # python‑cleantool
-windows c-drive safe junk-cleaning too; implemented in pure python,no third-party adware automatically skips occupied system files and outputs cleaning statistics
+Windows c‑drive safe junk‑cleaning tool, implemented in pure python, no third‑party adware, automatically skips occupied system files and outputs cleaning statistics.
+
+## 项目简介
+Windows 系统长期使用后，C盘会堆积大量临时文件、系统缓存、日志文件、更新残留文件。手动清理操作繁琐，容易误删系统文件，清理不彻底。
+本项目使用 Python 开发全自动C盘安全清理工具，自动扫描预设垃圾目录，批量删除可安全清理的临时缓存文件，统计清理文件数量与释放空间大小。工具仅处理垃圾目录，不会修改系统核心文件与用户数据。
+
+## 实现功能
+自动扫描可安全清理的系统垃圾目录
+清理 Windows 系统 Temp 临时文件
+清理用户环境变量下的临时文件
+清理系统更新缓存与升级残留文件
+清理系统日志缓存
+统计清理文件总数、释放磁盘空间
+自动跳过被占用、无法删除的文件，保证程序稳定运行
+
+## 技术栈
+Python 3
+os：目录遍历、文件删除、路径解析
+shutil：文件夹递归删除
+ctypes：管理员权限检测
+
+## 工具原理详解
+### 安全清理目录
+- `Windows\Temp`：系统临时文件
+用户Temp目录：运行时缓存文件
+`SoftwareDistribution\Download`：系统更新包缓存
+`Logs`：系统日志文件
+
+以上目录存放运行产生的缓存、日志垃圾，删除不会破坏系统。
+
+### 容错机制
+部分文件被程序占用会无法删除，脚本增加异常捕获，自动跳过这类文件，程序不会崩溃终止。
+
+`os.path.expandvars()`：解析Windows环境变量，动态获取真实目录路径。
+`os.path.join()`：安全拼接路径，自动适配系统路径分隔符，避免手写路径符号报错。
+f‑string：控制台输出运行日志，运行过程可视化，方便调试。
+全局变量：用于累计清理文件数量与空间大小；局部变量每次函数调用会重置，无法累加统计结果。
+原生字符串(r"")：关闭转义字符，专门用于书写Windows文件路径。
+普通高级语言封装的文件操作 API 权限有限，无法操作系统级临时文件、被占用缓存、受权限保护的系统目录。想要开发稳定的系统清理工具，须通过 ctypes 调用 Windows 底层原生 API，提升程序权限、兼容系统文件锁定机制，实现静默容错清理，保证工具不崩溃、不报错、清理覆盖率更高
+
+## 运行方式
+需要管理员权限运行，否则部分目录无删除权限
+VS Code / Terminal 右键以管理员身份启动终端
+直接执行脚本
+程序自动扫描、清理，控制台输出最终统计结果
